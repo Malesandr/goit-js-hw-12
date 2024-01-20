@@ -8,6 +8,7 @@ const form = document.querySelector('.form');
 const loader = document.querySelector('.loader');
 const gallery = document.querySelector('.gallery');
 const btnLoadMore = document.querySelector('.btn-load-more');
+// const inputSearch = document.querySelector('.input-search');
 
 const lightbox = new SimpleLightbox('.gallery a', {
     captionDelay: 250,
@@ -25,6 +26,7 @@ form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const searchQuery = event.currentTarget.elements.query.value.trim();
+    
     currentPage = 1;
 
     try {
@@ -39,6 +41,7 @@ form.addEventListener('submit', async (event) => {
         gallery.innerHTML = "";
         
         const markup = hits.map((hit) => {
+            
             return `<li class="gallery-item">
                 <a class="gallery-link" href="${hit.largeImageURL}">
                     <img
@@ -58,7 +61,7 @@ form.addEventListener('submit', async (event) => {
 
         gallery.insertAdjacentHTML(`beforeend`, markup);
         const oneImage = document.querySelector(".gallery-item");
-        form.reset();
+
 
         if (oneImage) {
             cardHeight = oneImage.getBoundingClientRect().height;
@@ -77,10 +80,11 @@ form.addEventListener('submit', async (event) => {
 });
 
 
-
-
 btnLoadMore.addEventListener('click', async () => {
+    
     currentPage++;
+
+    loader.style.display = "block"
 
     try {
         const searchQuery = form.elements.query.value.trim();
@@ -106,7 +110,7 @@ btnLoadMore.addEventListener('click', async () => {
 
         gallery.insertAdjacentHTML(`beforeend`, markup);
         lightbox.refresh();
-        form.reset();
+
 
         if (result.totalHits <= currentPage * 40) { 
             iziToast.info({
@@ -124,16 +128,23 @@ btnLoadMore.addEventListener('click', async () => {
     }
 });
 
+
+form.reset();
+
+currentQuery = param;
+page = 1;
+
 async function getImages(param, page) {
     loader.style.display = 'block';
+
     try {
-        const response = await axios.get(`https://pixabay.com/api/?key=${apiKey}&q=${encodeURIComponent(param)}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=40`);
+        const response = await axios.get(`https://pixabay.com/api/?key=${apiKey}&q=${param}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=40`);
         return {
             hits: response.data.hits,
             totalHits: response.data.totalHits
         };
     } catch (error) {
-        throw new Error(error.response.status);
+        showError();
     } finally {
         loader.style.display = 'none';
         
